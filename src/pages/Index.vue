@@ -3,7 +3,7 @@
     class="row items-center justify-center q-my-xl"
   >
     <div
-      class="col-xs-10 col-sm-8"
+      class="col-xs-10 col-md-8"
     >
       <q-card>
         <q-card-section>
@@ -11,7 +11,7 @@
             v-model="state.source"
             input-class="text-body1 text-primary"
             outlined
-            placeholder="URL"
+            placeholder="Shorten your link"
           >
             <template
               #after
@@ -19,6 +19,7 @@
               <q-btn
                 color="primary"
                 label="Shorten"
+                no-caps
                 size="lg"
                 class="text-weight-light"
                 @click="submit"
@@ -43,11 +44,11 @@
                   class="row"
                 >
                   <div
-                    class="col-xs-12 col-sm-6 flex items-center"
+                    class="col-xs-12 col-md-6 flex items-center"
                   >
                     <q-item-label
-                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-sm-none"
-                      style="word-break: break-all;"
+                      :style="`max-width: ${$q.screen.lt.md ? 75 : 50}vw`"
+                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-md-none ellipsis"
                     >
                       <span
                         v-text="record.source"
@@ -55,23 +56,29 @@
                     </q-item-label>
                   </div>
                   <div
-                    class="col-xs-12 col-sm-4 flex items-center justify-xs-start justify-sm-end"
+                    class="col-xs-12 col-md-4 flex items-center justify-xs-start justify-md-end"
                   >
                     <q-item-label
-                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-sm-none"
+                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-md-none"
                       style="word-break: break-all;"
                     >
-                      <span
+                      <a
+                        :href="`https://url.epoch.tw/${record.code}`"
+                        class="text-primary"
+                        rel="noopener noreferrer"
+                        style="text-decoration: none;"
+                        target="_blank"
                         v-text="`https://url.epoch.tw/${record.code}`"
                       />
                     </q-item-label>
                   </div>
                   <div
-                    class="col-xs-12 col-sm-2 flex items-center justify-xs-start justify-sm-end"
+                    class="col-xs-12 col-md-2 flex items-center justify-xs-start justify-md-end"
                   >
                     <q-btn
                       color="primary"
                       label="Copy"
+                      no-caps
                       outline
                       size="lg"
                       class="text-weight-light"
