@@ -7,7 +7,7 @@
     >
       <q-toolbar>
         <q-toolbar-title
-          class="text-h6"
+          class="text-h6 text-weight-regular"
         >
           URL Shortener
         </q-toolbar-title>
@@ -24,8 +24,5 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'MainLayout',
-  setup() {
-    //
-  },
 });
 </script>

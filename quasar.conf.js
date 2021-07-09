@@ -96,6 +96,9 @@ module.exports = configure((ctx) => ({
 
     // Quasar plugins
     plugins: [],
+
+    // https://v2.quasar.dev/layout/grid/introduction-to-flexbox#flex-addons
+    cssAddon: true,
   },
 
   // animations: 'all', // --- includes all animations

@@ -1,33 +1,90 @@
 <template>
   <div
-    class="row items-center justify-center q-mt-xl"
+    class="row items-center justify-center q-my-xl"
   >
     <div
       class="col-xs-10 col-sm-8"
     >
       <q-card>
         <q-card-section>
-          <q-form
-            class="q-gutter-md"
+          <q-input
+            v-model="state.source"
+            input-class="text-body1 text-primary"
+            outlined
+            placeholder="URL"
           >
-            <q-input
-              v-model="source"
-              input-class="text-body1 text-primary"
-              outlined
-              placeholder="URL"
+            <template
+              #after
             >
-              <template
-                #after
-              >
-                <q-btn
-                  color="primary"
-                  label="Shorten"
-                  size="lg"
-                />
-              </template>
-            </q-input>
-          </q-form>
+              <q-btn
+                color="primary"
+                label="Shorten"
+                size="lg"
+                class="text-weight-light"
+                @click="submit"
+              />
+            </template>
+          </q-input>
         </q-card-section>
+      </q-card>
+      <q-card
+        class="q-my-lg"
+      >
+        <q-list>
+          <template
+            v-for="(record, i) in state.records"
+            :key="record.code"
+          >
+            <q-item>
+              <q-item-section
+                class="q-py-md"
+              >
+                <div
+                  class="row"
+                >
+                  <div
+                    class="col-xs-12 col-sm-6 flex items-center"
+                  >
+                    <q-item-label
+                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-sm-none"
+                      style="word-break: break-all;"
+                    >
+                      <span
+                        v-text="record.source"
+                      />
+                    </q-item-label>
+                  </div>
+                  <div
+                    class="col-xs-12 col-sm-4 flex items-center justify-xs-start justify-sm-end"
+                  >
+                    <q-item-label
+                      class="text-body1 text-weight-light q-mb-xs-lg q-mb-sm-none"
+                      style="word-break: break-all;"
+                    >
+                      <span
+                        v-text="`https://url.epoch.tw/${record.code}`"
+                      />
+                    </q-item-label>
+                  </div>
+                  <div
+                    class="col-xs-12 col-sm-2 flex items-center justify-xs-start justify-sm-end"
+                  >
+                    <q-btn
+                      color="primary"
+                      label="Copy"
+                      outline
+                      size="lg"
+                      class="text-weight-light"
+                    />
+                  </div>
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-separator
+              v-show="i < state.records.length - 1"
+            />
+          </template>
+        </q-list>
       </q-card>
     </div>
   </div>
@@ -35,16 +92,39 @@
 
 <script>
 import {
+  api,
+} from 'boot/axios';
+import {
   defineComponent,
-  ref,
+  onMounted,
+  reactive,
+  watch,
 } from 'vue';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
-    const source = ref('');
+    const state = reactive({
+      source: '',
+      records: [],
+    });
+    onMounted(() => {
+      state.records = JSON.parse(localStorage.getItem('records')) || [];
+    });
+    watch(() => state.records, () => {
+      localStorage.setItem('records', JSON.stringify(state.records));
+    });
+    const submit = async () => {
+      api.post('/api/links', {
+        source: 'https://www.google.com/',
+      })
+        .then(({ data }) => {
+          state.records = [data.data, ...state.records];
+        });
+    };
     return {
-      source,
+      state,
+      submit,
     };
   },
 });
