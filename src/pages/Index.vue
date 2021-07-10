@@ -17,6 +17,7 @@
               #after
             >
               <q-btn
+                :disable="!isValidLink"
                 color="primary"
                 label="Shorten"
                 no-caps
@@ -102,6 +103,7 @@ import {
   api,
 } from 'boot/axios';
 import {
+  computed,
   defineComponent,
   onMounted,
   reactive,
@@ -122,16 +124,28 @@ export default defineComponent({
       localStorage.setItem('records', JSON.stringify(state.records));
     });
     const submit = async () => {
-      api.post('/api/links', {
-        source: 'https://www.google.com/',
-      })
-        .then(({ data }) => {
-          state.records = [data.data, ...state.records];
+      try {
+        const { data } = await api.post('/api/links', {
+          source: state.source,
         });
+        state.records = [data.data, ...state.records];
+      } catch (err) {
+        //
+      }
     };
+    const isValidLink = computed(() => {
+      let url;
+      try {
+        url = new URL(state.source);
+      } catch {
+        return false;
+      }
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    });
     return {
       state,
       submit,
+      isValidLink,
     };
   },
 });
