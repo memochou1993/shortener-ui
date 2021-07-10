@@ -7,26 +7,33 @@
     >
       <q-card>
         <q-card-section>
-          <q-input
-            v-model="state.source"
-            input-class="text-body1 text-primary"
-            outlined
-            placeholder="Shorten your link"
+          <q-form
+            @submit="store"
           >
-            <template
-              #after
+            <q-input
+              ref="source"
+              v-model="state.source"
+              autofocus
+              input-class="text-body1 text-primary"
+              outlined
+              placeholder="Shorten your link"
             >
-              <q-btn
-                class="text-weight-light"
-                color="primary"
-                label="Shorten"
-                no-caps
-                size="lg"
-                style="width: 100px"
-                @click="shorten"
-              />
-            </template>
-          </q-input>
+              <template
+                #after
+              >
+                <q-btn
+                  class="text-weight-light"
+                  color="primary"
+                  label="Shorten"
+                  no-caps
+                  size="lg"
+                  style="width: 100px"
+                  type="submit"
+                  @click="store"
+                />
+              </template>
+            </q-input>
+          </q-form>
         </q-card-section>
       </q-card>
       <q-card
@@ -108,6 +115,9 @@
 
 <script>
 import {
+  v4 as uuidv4,
+} from 'uuid';
+import {
   useQuasar,
   copyToClipboard,
 } from 'quasar';
@@ -119,6 +129,7 @@ import {
   defineComponent,
   onMounted,
   reactive,
+  ref,
   watch,
 } from 'vue';
 
@@ -132,6 +143,7 @@ export default defineComponent({
       source: '',
       records: [],
     });
+    const source = ref(null);
     onMounted(() => {
       state.records = JSON.parse(localStorage.getItem('records')) || [];
     });
@@ -148,7 +160,7 @@ export default defineComponent({
       return url.protocol === 'http:' || url.protocol === 'https:';
     });
     const isCopied = (record) => record.copied;
-    const shorten = async () => {
+    const store = async () => {
       if (!isValidSource.value) {
         $q.notify({
           color: 'pink',
@@ -160,12 +172,14 @@ export default defineComponent({
       try {
         const { data } = await api.post('/links', {
           source: state.source.trim(),
+          key: uuidv4(),
         });
         state.source = '';
         state.records = [data.data, ...state.records];
       } catch (err) {
         console.debug(err);
       }
+      source.value.focus();
     };
     const copy = async (record) => {
       try {
@@ -179,7 +193,9 @@ export default defineComponent({
     const destroy = async (record) => {
       try {
         await api.delete(`/links/${record.code}`, {
-          source: state.source,
+          params: {
+            key: record.key,
+          },
         });
       } catch (err) {
         console.debug(err);
@@ -189,9 +205,10 @@ export default defineComponent({
     return {
       redirectUrl,
       state,
+      source,
       isValidSource,
       isCopied,
-      shorten,
+      store,
       copy,
       destroy,
     };
