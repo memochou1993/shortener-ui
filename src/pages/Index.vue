@@ -5,7 +5,9 @@
     <div
       class="col-xs-10 col-md-8"
     >
-      <q-card>
+      <q-card
+        class="q-mb-lg"
+      >
         <q-card-section>
           <q-form
             @submit="store"
@@ -23,7 +25,7 @@
               >
                 <q-btn
                   class="text-weight-light"
-                  color="primary"
+                  color="secondary"
                   label="Shorten"
                   no-caps
                   size="lg"
@@ -36,9 +38,7 @@
           </q-form>
         </q-card-section>
       </q-card>
-      <q-card
-        class="q-my-lg"
-      >
+      <q-card>
         <q-list>
           <template
             v-for="(record, i) in state.records"
@@ -52,7 +52,7 @@
                   class="row"
                 >
                   <div
-                    class="col-xs-12 col-md-6 flex items-center"
+                    class="col-xs-12 col-md-6 flex items-center q-pr-md-md"
                   >
                     <q-item-label
                       :style="`max-width: ${$q.screen.lt.md ? 75 : 50}vw`"
@@ -64,7 +64,7 @@
                     </q-item-label>
                   </div>
                   <div
-                    class="col-xs-12 col-md-4 flex items-center justify-xs-start justify-md-end"
+                    class="col-xs-12 col-md-4 flex items-center"
                   >
                     <q-item-label
                       class="text-body1 text-weight-light q-mb-xs-lg q-mb-md-none"
@@ -85,7 +85,7 @@
                   >
                     <div class="flex no-wrap">
                       <q-btn
-                        :color="`${isCopied(record) ? 'secondary' : 'primary'}`"
+                        :color="`${isCopied(record) ? 'accent' : 'primary'}`"
                         flat
                         icon="content_copy"
                         round
@@ -163,7 +163,7 @@ export default defineComponent({
     const store = async () => {
       if (!isValidSource.value) {
         $q.notify({
-          color: 'pink',
+          color: 'accent',
           message: 'Please provide a valid URL',
           timeout: 500,
         });
