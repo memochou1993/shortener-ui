@@ -17,13 +17,13 @@
               #after
             >
               <q-btn
-                :disable="!isValidLink"
+                :disable="!isValidUrl"
                 color="primary"
                 label="Shorten"
                 no-caps
                 size="lg"
                 class="text-weight-light"
-                @click="submit"
+                @click="shorten"
               />
             </template>
           </q-input>
@@ -64,12 +64,12 @@
                       style="word-break: break-all;"
                     >
                       <a
-                        :href="`https://url.epoch.tw/${record.code}`"
+                        :href="`${baseUrl}${record.code}`"
                         class="text-primary"
                         rel="noopener noreferrer"
                         style="text-decoration: none;"
                         target="_blank"
-                        v-text="`https://url.epoch.tw/${record.code}`"
+                        v-text="`${baseUrl}${record.code}`"
                       />
                     </q-item-label>
                   </div>
@@ -83,6 +83,7 @@
                       outline
                       size="lg"
                       class="text-weight-light"
+                      @click="copy(`${baseUrl}${record.code}`)"
                     />
                   </div>
                 </div>
@@ -100,6 +101,9 @@
 
 <script>
 import {
+  copyToClipboard,
+} from 'quasar';
+import {
   api,
 } from 'boot/axios';
 import {
@@ -113,6 +117,7 @@ import {
 export default defineComponent({
   name: 'PageIndex',
   setup() {
+    const baseUrl = 'https://url.epoch.tw/';
     const state = reactive({
       source: '',
       records: [],
@@ -123,17 +128,24 @@ export default defineComponent({
     watch(() => state.records, () => {
       localStorage.setItem('records', JSON.stringify(state.records));
     });
-    const submit = async () => {
+    const shorten = async () => {
       try {
         const { data } = await api.post('/api/links', {
           source: state.source,
         });
         state.records = [data.data, ...state.records];
       } catch (err) {
-        //
+        console.debug(err);
       }
     };
-    const isValidLink = computed(() => {
+    const copy = async (link) => {
+      try {
+        await copyToClipboard(link);
+      } catch (err) {
+        console.debug(err);
+      }
+    };
+    const isValidUrl = computed(() => {
       let url;
       try {
         url = new URL(state.source);
@@ -143,9 +155,11 @@ export default defineComponent({
       return url.protocol === 'http:' || url.protocol === 'https:';
     });
     return {
+      baseUrl,
       state,
-      submit,
-      isValidLink,
+      shorten,
+      copy,
+      isValidUrl,
     };
   },
 });
