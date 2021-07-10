@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  app:
+    container_name: shortener-ui
+    build: .
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:3000"

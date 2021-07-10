@@ -64,12 +64,12 @@
                       style="word-break: break-all;"
                     >
                       <a
-                        :href="`${baseUrl}${record.code}`"
+                        :href="`${redirectUrl}/${record.code}`"
                         class="text-primary"
                         rel="noopener noreferrer"
                         style="text-decoration: none;"
                         target="_blank"
-                        v-text="`${baseUrl}${record.code}`"
+                        v-text="`${redirectUrl}/${record.code}`"
                       />
                     </q-item-label>
                   </div>
@@ -126,7 +126,7 @@ export default defineComponent({
   name: 'PageIndex',
   setup() {
     const $q = useQuasar();
-    const baseUrl = 'https://url.epoch.tw/';
+    const redirectUrl = process.env.API_URL;
     const state = reactive({
       copied: '',
       source: '',
@@ -158,8 +158,8 @@ export default defineComponent({
         return;
       }
       try {
-        const { data } = await api.post('/api/links', {
-          source: state.source,
+        const { data } = await api.post('/links', {
+          source: state.source.trim(),
         });
         state.source = '';
         state.records = [data.data, ...state.records];
@@ -169,7 +169,7 @@ export default defineComponent({
     };
     const copy = async (record) => {
       try {
-        await copyToClipboard(`${baseUrl}${record.code}`);
+        await copyToClipboard(`${redirectUrl}/${record.code}`);
         record.copied = true;
         setTimeout(() => delete record.copied, 1000);
       } catch (err) {
@@ -178,7 +178,7 @@ export default defineComponent({
     };
     const destroy = async (record) => {
       try {
-        await api.delete(`/api/links/${record.code}`, {
+        await api.delete(`/links/${record.code}`, {
           source: state.source,
         });
       } catch (err) {
@@ -187,7 +187,7 @@ export default defineComponent({
       state.records = state.records.filter((r) => r.code !== record.code);
     };
     return {
-      baseUrl,
+      redirectUrl,
       state,
       isValidSource,
       isCopied,

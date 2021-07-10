@@ -47,6 +47,7 @@ module.exports = configure((ctx) => ({
 
   // Full list of options: https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
   build: {
+    env: require('dotenv').config().parsed,
     vueRouterMode: 'hash', // available values: 'hash', 'history'
 
     // transpile: false,

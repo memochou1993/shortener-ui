@@ -4,7 +4,7 @@ import {
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://url.epoch.tw',
+  baseURL: `${process.env.API_URL}/api`,
 });
 
 export default boot(({ app }) => {
