@@ -25,7 +25,7 @@
               >
                 <q-btn
                   class="text-weight-light"
-                  color="secondary"
+                  color="primary"
                   label="Shorten"
                   no-caps
                   size="lg"
