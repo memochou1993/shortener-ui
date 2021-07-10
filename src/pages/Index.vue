@@ -17,12 +17,12 @@
               #after
             >
               <q-btn
-                :disable="!isValidUrl"
+                class="text-weight-light"
                 color="primary"
                 label="Shorten"
                 no-caps
                 size="lg"
-                class="text-weight-light"
+                style="width: 100px"
                 @click="shorten"
               />
             </template>
@@ -77,13 +77,14 @@
                     class="col-xs-12 col-md-2 flex items-center justify-xs-start justify-md-end"
                   >
                     <q-btn
-                      color="primary"
-                      label="Copy"
-                      no-caps
-                      outline
-                      size="lg"
+                      :color="`${isCopied(record) ? 'secondary' : 'primary'}`"
+                      :label="`${isCopied(record) ? 'Copied' : 'Copy'}`"
+                      :outline="!isCopied(record)"
                       class="text-weight-light"
-                      @click="copy(`${baseUrl}${record.code}`)"
+                      no-caps
+                      size="lg"
+                      style="width: 100px"
+                      @click="copy(record)"
                     />
                   </div>
                 </div>
@@ -101,6 +102,7 @@
 
 <script>
 import {
+  useQuasar,
   copyToClipboard,
 } from 'quasar';
 import {
@@ -117,8 +119,10 @@ import {
 export default defineComponent({
   name: 'PageIndex',
   setup() {
+    const $q = useQuasar();
     const baseUrl = 'https://url.epoch.tw/';
     const state = reactive({
+      copied: '',
       source: '',
       records: [],
     });
@@ -128,7 +132,24 @@ export default defineComponent({
     watch(() => state.records, () => {
       localStorage.setItem('records', JSON.stringify(state.records));
     });
+    const isValidSource = computed(() => {
+      let url;
+      try {
+        url = new URL(state.source);
+      } catch {
+        return false;
+      }
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    });
     const shorten = async () => {
+      if (!isValidSource.value) {
+        $q.notify({
+          color: 'pink',
+          message: 'Please provide a valid URL',
+          timeout: 500,
+        });
+        return;
+      }
       try {
         const { data } = await api.post('/api/links', {
           source: state.source,
@@ -138,28 +159,23 @@ export default defineComponent({
         console.debug(err);
       }
     };
-    const copy = async (link) => {
+    const copy = async (record) => {
       try {
-        await copyToClipboard(link);
+        await copyToClipboard(`${baseUrl}${record.code}`);
+        record.copied = true;
+        setTimeout(() => delete record.copied, 1000);
       } catch (err) {
         console.debug(err);
       }
     };
-    const isValidUrl = computed(() => {
-      let url;
-      try {
-        url = new URL(state.source);
-      } catch {
-        return false;
-      }
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    });
+    const isCopied = (record) => record.copied;
     return {
       baseUrl,
       state,
       shorten,
       copy,
-      isValidUrl,
+      isCopied,
+      isValidSource,
     };
   },
 });

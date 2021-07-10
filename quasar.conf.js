@@ -95,7 +95,9 @@ module.exports = configure((ctx) => ({
     // directives: [],
 
     // Quasar plugins
-    plugins: [],
+    plugins: [
+      'Notify',
+    ],
 
     // https://v2.quasar.dev/layout/grid/introduction-to-flexbox#flex-addons
     cssAddon: true,
