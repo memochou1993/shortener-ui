@@ -76,16 +76,22 @@
                   <div
                     class="col-xs-12 col-md-2 flex items-center justify-xs-start justify-md-end"
                   >
-                    <q-btn
-                      :color="`${isCopied(record) ? 'secondary' : 'primary'}`"
-                      :label="`${isCopied(record) ? 'Copied' : 'Copy'}`"
-                      :outline="!isCopied(record)"
-                      class="text-weight-light"
-                      no-caps
-                      size="lg"
-                      style="width: 100px"
-                      @click="copy(record)"
-                    />
+                    <div class="flex no-wrap">
+                      <q-btn
+                        :color="`${isCopied(record) ? 'secondary' : 'primary'}`"
+                        flat
+                        icon="content_copy"
+                        round
+                        @click="copy(record)"
+                      />
+                      <q-btn
+                        color="primary"
+                        flat
+                        icon="delete_outline"
+                        round
+                        @click="destroy(record)"
+                      />
+                    </div>
                   </div>
                 </div>
               </q-item-section>
@@ -141,6 +147,7 @@ export default defineComponent({
       }
       return url.protocol === 'http:' || url.protocol === 'https:';
     });
+    const isCopied = (record) => record.copied;
     const shorten = async () => {
       if (!isValidSource.value) {
         $q.notify({
@@ -154,6 +161,7 @@ export default defineComponent({
         const { data } = await api.post('/api/links', {
           source: state.source,
         });
+        state.source = '';
         state.records = [data.data, ...state.records];
       } catch (err) {
         console.debug(err);
@@ -168,14 +176,24 @@ export default defineComponent({
         console.debug(err);
       }
     };
-    const isCopied = (record) => record.copied;
+    const destroy = async (record) => {
+      try {
+        await api.delete(`/api/links/${record.code}`, {
+          source: state.source,
+        });
+      } catch (err) {
+        console.debug(err);
+      }
+      state.records = state.records.filter((r) => r.code !== record.code);
+    };
     return {
       baseUrl,
       state,
+      isValidSource,
+      isCopied,
       shorten,
       copy,
-      isCopied,
-      isValidSource,
+      destroy,
     };
   },
 });
