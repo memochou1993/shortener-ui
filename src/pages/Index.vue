@@ -6,35 +6,103 @@
       class="col-xs-10 col-md-8"
     >
       <q-card
-        class="q-mb-lg"
+        class="bg-grey-1 q-mb-lg"
       >
         <q-card-section>
-          <q-form
-            @submit="store"
+          <q-tabs
+            v-model="state.tab"
+            align="justify"
+            content-class="text-primary"
+            dense
+            narrow-indicator
+            no-caps
           >
-            <q-input
-              ref="source"
-              v-model="state.source"
-              autofocus
-              input-class="text-body1 text-primary"
-              outlined
-              placeholder="Shorten your link"
+            <q-tab
+              name="link"
+              icon="link"
+              label="Link"
+            />
+            <q-tab
+              name="file"
+              icon="attachment"
+              label="File"
+            />
+          </q-tabs>
+          <q-form
+            @submit="storeLink"
+          >
+            <q-tab-panels
+              v-model="state.tab"
             >
-              <template
-                #after
+              <q-tab-panel
+                class="bg-grey-1 q-px-none"
+                name="link"
               >
-                <q-btn
-                  class="text-weight-light"
-                  color="primary"
-                  label="Shorten"
-                  no-caps
-                  size="lg"
-                  style="width: 100px"
-                  type="submit"
-                  @click="store"
-                />
-              </template>
-            </q-input>
+                <q-input
+                  ref="source"
+                  v-model="state.source"
+                  autofocus
+                  input-class="text-body1 text-primary"
+                  outlined
+                >
+                  <template
+                    #prepend
+                  >
+                    <q-icon
+                      name="link"
+                    />
+                  </template>
+                  <template
+                    #after
+                  >
+                    <q-btn
+                      class="text-weight-light"
+                      color="primary"
+                      label="Shorten"
+                      no-caps
+                      size="lg"
+                      style="width: 100px"
+                      type="submit"
+                      @click="storeLink"
+                    />
+                  </template>
+                </q-input>
+              </q-tab-panel>
+              <q-tab-panel
+                class="bg-grey-1 q-px-none"
+                name="file"
+              >
+                <q-file
+                  v-model="state.file"
+                  :readonly="state.loading"
+                  autofocus
+                  input-class="text-body1 text-primary"
+                  outlined
+                >
+                  <template
+                    #prepend
+                  >
+                    <q-icon
+                      name="attachment"
+                    />
+                  </template>
+                  <template
+                    #after
+                  >
+                    <q-btn
+                      :loading="state.loading"
+                      class="text-weight-light"
+                      color="primary"
+                      label="Upload"
+                      no-caps
+                      size="lg"
+                      style="width: 100px"
+                      @click="storeObject"
+                    />
+                  </template>
+                </q-file>
+              </q-tab-panel>
+            </q-tab-panels>
           </q-form>
         </q-card-section>
       </q-card>
@@ -44,7 +112,9 @@
             v-for="(record, i) in state.records"
             :key="record.code"
           >
-            <q-item>
+            <q-item
+              class="bg-grey-1"
+            >
               <q-item-section
                 class="q-py-md"
               >
@@ -89,14 +159,14 @@
                         flat
                         icon="content_copy"
                         round
-                        @click="copy(record)"
+                        @click="copyLink(record)"
                       />
                       <q-btn
                         color="primary"
                         flat
                         icon="delete_outline"
                         round
-                        @click="destroy(record)"
+                        @click="destroyLink(record)"
                       />
                     </div>
                   </div>
@@ -139,9 +209,12 @@ export default defineComponent({
     const $q = useQuasar();
     const redirectUrl = process.env.API_URL;
     const state = reactive({
+      tab: 'link',
+      loading: false,
       copied: '',
       source: '',
       records: [],
+      file: null,
     });
     const source = ref(null);
     onMounted(() => {
@@ -160,7 +233,7 @@ export default defineComponent({
       return url.protocol === 'http:' || url.protocol === 'https:';
     });
     const isCopied = (record) => record.copied;
-    const store = async () => {
+    const storeLink = async () => {
       if (!isValidSource.value) {
         $q.notify({
           color: 'accent',
@@ -181,7 +254,7 @@ export default defineComponent({
       }
       source.value.focus();
     };
-    const copy = async (record) => {
+    const copyLink = async (record) => {
       try {
         await copyToClipboard(`${redirectUrl}/${record.code}`);
         record.copied = true;
@@ -190,7 +263,7 @@ export default defineComponent({
         console.debug(err);
       }
     };
-    const destroy = async (record) => {
+    const destroyLink = async (record) => {
       try {
         await api.delete(`/links/${record.code}`, {
           params: {
@@ -202,15 +275,42 @@ export default defineComponent({
       }
       state.records = state.records.filter((r) => r.code !== record.code);
     };
+    const storeObject = async () => {
+      if (!state.file) {
+        $q.notify({
+          color: 'accent',
+          message: 'Please provide a valid file',
+          timeout: 500,
+        });
+        return;
+      }
+      state.loading = true;
+      const formData = new FormData();
+      formData.append('files[]', state.file);
+      formData.append('key', uuidv4().replaceAll('-', ''));
+      try {
+        const { data } = await api.post('/objects', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        state.records = [{ ...data.data, source: state.file.name }, ...state.records];
+        state.file = null;
+        state.loading = false;
+      } catch (err) {
+        console.debug(err);
+      }
+    };
     return {
       redirectUrl,
       state,
       source,
       isValidSource,
       isCopied,
-      store,
-      copy,
-      destroy,
+      storeLink,
+      copyLink,
+      destroyLink,
+      storeObject,
     };
   },
 });
