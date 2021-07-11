@@ -9,7 +9,7 @@
         :ratio="16/9"
       >
         <iframe
-          :src="`http://localhost/api/objects/${object}`"
+          :src="src"
           style="border: 0;"
         />
       </q-responsive>
@@ -22,6 +22,7 @@ import {
   api,
 } from 'boot/axios';
 import {
+  computed,
   defineComponent,
 } from 'vue';
 import {
@@ -35,16 +36,17 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const { object } = route.params;
+    const src = computed(() => `${process.env.API_URL}/api/objects/${object}`);
     const fetch = async () => {
       try {
-        await api.get(`http://localhost/api/objects/${object}`);
+        await api.get(src.value);
       } catch {
         router.push('/');
       }
     };
     fetch();
     return {
-      object,
+      src,
     };
   },
 });

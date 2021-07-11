@@ -11,7 +11,7 @@
         <q-card-section>
           <q-tabs
             v-model="state.tab"
-            align="justify"
+            align="left"
             content-class="text-primary"
             dense
             narrow-indicator
@@ -19,12 +19,10 @@
           >
             <q-tab
               name="link"
-              icon="link"
               label="Link"
             />
             <q-tab
               name="file"
-              icon="attachment"
               label="File"
             />
           </q-tabs>
@@ -305,7 +303,6 @@ export default defineComponent({
       redirectUrl,
       state,
       source,
-      isValidSource,
       isCopied,
       storeLink,
       copyLink,
