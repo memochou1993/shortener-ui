@@ -9,7 +9,9 @@
         <q-toolbar-title
           class="text-h6 text-weight-regular"
         >
-          <span
+          <router-link
+            :to="{ path: '/' }"
+            style="color: white; text-decoration: none;"
             v-text="'URL Shortener'"
           />
         </q-toolbar-title>
