@@ -1,5 +1,5 @@
 # build stage
-FROM node:12 as builder
+FROM node:16 as builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN yarn install
 RUN quasar build -m ssr
 
 # final stage
-FROM node:alpine
+FROM node:16-alpine
 
 WORKDIR /app
 
